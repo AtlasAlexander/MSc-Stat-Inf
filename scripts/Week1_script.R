@@ -41,6 +41,7 @@ ggplot(data = gapminder, mapping = aes(x=lifeExp)) + geom_boxplot()
 # As a group, try to create some 2-d visualisations in R.
 
 ggplot(data = gapminder, mapping = aes(x= lifeExp, y=gdpPercap))  +
+  geom_point() +
   geom_smooth(se = FALSE)
 
 # Task 5 [Advanced, Optional]

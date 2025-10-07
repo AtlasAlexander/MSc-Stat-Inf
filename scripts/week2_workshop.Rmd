@@ -1,0 +1,125 @@
+---
+title: "Introduction to R markdown"
+author: '20015367'
+date: '07/10/2025'
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # do not change this option, this shows the code in your knitted document
+```
+
+# Firstly check you have any packages required in the session, the only packaged required in this session is ggplot2.
+# Run the following code, which double-checks that you have the packages installed,
+# and loads them into the R session.
+
+```{r}
+if(!require(ggplot2)){install.packages("ggplot2")}
+library(ggplot2)
+```
+
+### Task 1 Introduction to R markdown ###
+
+This is an R markdown document. Firstly, knit this document to Word, see what happens!
+
+
+For this exercise we will use data embedded within R, mtcars, start by exploring the structure of the dataset and the variables
+
+
+```{r cars}
+str(mtcars)
+```
+
+```{r}
+names(mtcars)
+```
+
+In this workshop we will concentrate on using mpg (miles per gallon); cyl (number of cylinders) and hp (horsepower).
+
+First, find out more about the dataset using the help file, e.g. with the command **?mtcars**
+
+Next, look at the first 6 rows of data using the command **head**
+
+```{r}
+head(mtcars)
+```
+
+# Examples of embedding a calculated value into sentences:
+
+The mean mpg for cars in this dataset is `r mean(mtcars$mpg)`.
+
+Edit the statement so that it only prints to 2 decimal places:
+
+The mean mpg for cars in this dataset is `r round(mean(mtcars$mpg),2)`.
+
+
+# Question. What other summary statistics may you wish to report within the text of a document?
+
+
+# Example graphics 
+
+Creating a boxplot of miles per gallaon (using geom_boxplot)
+```{r}
+
+ggplot(mtcars, aes(x = "", y = mpg)) +
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(title = "Boxplot of MPG from mtcars Dataset",
+       y = "Miles per Gallon (mpg)") +
+  theme_minimal()
+```
+
+In this code:
+
+- ggplot(mtcars, aes(x = "", y = mpg)): This sets up the basic ggplot object, specifying the dataset (mtcars) and aesthetics (mapping the empty string "" to the x-axis and the 'mpg' variable to the y-axis).
+
+- geom_boxplot(fill = "skyblue", color = "blue"): This adds the boxplot layer to the ggplot object, specifying the fill and border color.
+
+- labs(title = "Boxplot of MPG from mtcars Dataset", y = "Miles per Gallon (mpg)"): This sets the plot title and y-axis label.
+
+- theme_minimal(): This applies a minimal theme to the plot for better aesthetics.
+
+Creating a histogram (using geom_histogram), of miles per gallon and number of cars:
+```{r}
+
+ggplot(mtcars,aes(mpg))+geom_histogram(binwidth = 4)+xlab("Miles per Gallon")+ylab("Number of Cars")+ggtitle("Distribution of Cars by Mileage")
+```
+
+Editing this to show the histogram for the number of cylinders (edit the binwidth to be equal to 1).
+```{r}
+ggplot(mtcars,aes(cyl))+geom_histogram(binwidth = 1)+xlab("Cylinders")+ylab("Number of Cars")+ggtitle("Distribution of Cars by Cylinders")
+```
+
+
+
+### Task 2. Dewis ###
+
+This is the return of the boxplot and histrogram Dewis exercise, but now we include the data for you to do some analyses within R.
+
+As per instructions in Dewis, can you create a new R markdown file, and knit a word document with your answers?
+```{r}
+ggplot(data=mtcars,aes(x=mpg)) + geom_boxplot()
+```
+### Task 3. Reproducible research ###
+
+List 'good practice' or standards of reproducible research that you have evidenced in this document (and/or in your R markdown file for the Dewis question).
+
+
+What other 'good practice' or standards of reproducible research might be appropriate?
+
+# Question: When might you use the 'echo = false' command?
+
+
+
+
+### Task 4. Data Analyses plan ###
+
+Consider the potential research questions that could arise with the mtcars dataset.
+
+Prepare a data analyses plan to address these research questions. 
+
+Open a new R markdown file and prepare a polished report with the analyses as per your statistical analyses plan.
+
+
+
+

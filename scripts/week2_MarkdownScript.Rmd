@@ -1,0 +1,39 @@
+---
+title: "Week 2 Markdown Script"
+author: '20015367'
+date: "2025-10-07"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if(!require(ggplot2)){install.packages("ggplot2")}
+library(ggplot2)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r Data}
+#The .. tell R to exit it's current folder
+dataset <- read.csv("../Data/week2data.csv")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r Box, echo=FALSE}
+ggplot(data = dataset, mapping = aes(y=x)) + geom_boxplot(fill = "skyblue", color = "blue")+
+  labs(title = "IQ post new Medication",
+       y = "IQ", x="Variable x")
+```
+
+## Interperating the Data
+
+The average IQ pre-treatment is 100. This data shows an average IQ approximately 140 showing some correlation between IQ & the medication.

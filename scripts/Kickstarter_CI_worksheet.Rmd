@@ -1,0 +1,211 @@
+---
+title: "Kickstarter data confidence intervals example"
+author: "Statistical Inference Team"
+date: "24/10/2024"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(readr)
+```
+
+## Checking your folder structure
+
+It is good practice to save your data in one folder and save your R scripts in another folder.
+
+So we recommend you have the following structure in your course folder:
+
+- a folder called `scripts` (Your working folder, contains your Rmd files)
+- a folder called `data` (Contains data files)
+
+We also recommend you use `scripts` as your working folder (working directory). 
+You can change this in Rstudio by choosing 'Session' and 'Set working directory' and 'Choose directory'.
+
+When you load data into R, the R script must be able to find where the data is saved on your computer.
+This means giving R the correct PATH and FILENAME.
+
+```{r check_folder_structure, echo=FALSE}
+
+# Run this code chunk to check if you can load the data for this worksheet.
+
+# It will work if you have followed our recommendations
+
+data_location <- "../data/ks-projects-201801.csv"
+print(paste("My working directory is currently", getwd()))
+print(paste("R is looking for the data in file", normalizePath(data_location)))
+print(paste("R has", c("not")[!file.exists(data_location)] ,"found the data for this worksheet"))
+
+# If it does not work then:
+# Follow our recommendations for folder structure and working directory, or
+# Modify data_location to suit your folder structure
+
+```
+
+
+## The kickstarter data
+
+I have used a function from the `readr` library (called `read_csv`) which gives me a lot more control over how I load the data.  If you click on a file in the Files pane of R studio, it offers to load the data using this function. But here the command has been captured from the console and scripted.
+
+```{r load_kickstarter, echo=FALSE}
+
+kickstarter <- read_csv(data_location, 
+  col_types = cols(
+    currency = col_factor(levels = c(
+      "AUD",  "CAD", "CHF", "DKK", "EUR", "GBP", "HKD", "JPY",
+      "MXN", "NOK", "NZD", "SEK", "SGD", "USD")), 
+    state = col_factor(levels = c(
+      "canceled",  "failed", "live", "successful", "suspended",
+      "undefined")),
+    country = col_factor(levels = c(
+      "AT", "AU", "BE", "CA", "CH", "DE", "DK", "ES", "FR", "GB",
+      "HK", "IE", "IT", "JP", "LU", "MX", "N,0\"", "NL", "NO",
+      "NZ", "SE", "SG", "US")),
+    main_category = col_factor(levels =c (
+      "Art", "Comics", "Crafts", "Dance", "Design", "Fashion",
+      "Film & Video", "Food", "Games", "Journalism", "Music", 
+      "Photography", "Publishing", "Technology", "Theater")),
+    deadline = col_date(format = "%Y-%m-%d"), 
+    launched = col_datetime(format = "%Y-%m-%d %H:%M:%S")
+    ))
+```
+
+This is a large dataset. It may speed things up if you take a random subsample.  The following code takes a random sample of 30,000 rows from the data, and then deletes the large dataset.  Feel free to reduce the sample size if your computer needs it.
+
+```{r take_sample}
+n_subsample <- 30000
+index <- sample(c(1:length(kickstarter$ID)), n_subsample)
+my_kickstarter <- kickstarter[index, ]
+rm(kickstarter)
+```
+
+
+### Looking at the funding goal by the main category
+
+To look at some confidence intervals, we will consider the funding goal variable.  We will first see how the distribution of funding goals varies by the main category of the funding call.
+
+```{r goal_by_project, echo=FALSE}
+my_kickstarter %>%
+  ggplot(aes(x=main_category, y=usd_goal_real)) + 
+  geom_boxplot() + 
+  scale_y_log10() +
+  coord_flip() +
+  labs(title = "Size of Kickstarter goal (USD) by type of project",
+       subtitle = "Kickstarter enabled funding calls",
+       caption = "Data from Kickstarter via Kaggle",
+       tag = "Figure 1") + 
+  xlab("Type of project") + 
+  ylab("Funding Goal (USD)") + 
+  theme_bw()  
+```
+
+We have had to use a logarithmic transform of the $y$ axis. There were no problems with $0$ (who starts a kickstarter requesting $0$ funding?). But it might play down the differences. Technology projects for example seem to have much larger goals on average than Dance or Theatre.  Try this visual with and without `scale_y_log_10()`.   Do you have any other suggestions?
+
+
+### 95% CI for the mean of one category
+
+First, look at the funding goals for technology projects
+
+```{r goal_us, echo=FALSE}
+my_kickstarter %>%
+  filter(main_category %in% c("Technology")) %>%
+  ggplot(aes(x=usd_goal_real)) + 
+  geom_histogram() +
+  scale_x_log10() +
+  labs(title = "Distribution of funding goals for Tech projects",
+       subtitle = "Kickstarter enabled funding calls",
+       caption = "Data from Kickstarter via Kaggle",
+       tag = "Figure 2") + 
+  xlab("Funding Goal (USD)") +
+  theme_bw()  
+```
+
+We can find a confidence interval using the modelling function:
+
+```{r ci_model_us}
+model <- lm(usd_goal_real ~ 1, data = my_kickstarter,
+            subset=main_category == "Technology")
+confint(model)
+
+```
+
+### 95% CIs for the mean of all categories
+
+We will cover modelling in detail in a other weeks.  For now, just note that we have to set the intercept to -1 along with setting a group variable (a factor) so that we only get estimates for each group mean.
+
+```{r ci_goal_global}
+model <- lm(usd_goal_real ~ -1 + main_category, data = my_kickstarter)
+cis <- confint(model)
+cis
+
+```
+
+- How does the 95% CI for Technology compare when we use a linear model to fit a CI to all group means, and when we use a linear model to fit a CI to Technology on its own?
+- Do you see any other problems in these Confidence Intervals
+
+### Using logarithms and plotting the confidence intervals
+
+We are going to see if we can work with $\log_{10}(\mbox{Funding Goal})$ instead of the untransformed data.
+
+we need to fit a model to the $\log_{10}$ transformed data.   We can then plot these results.  
+
+```{r plot_cis}
+model_log <- lm(log10(usd_goal_real) ~ -1 + main_category, data = my_kickstarter)
+cis <- confint(model_log)
+cis
+
+cis_df <- as_tibble(cis, rownames = "category")
+colnames(cis_df) <- c("category", "lower", "upper")
+
+cis_df %>% ggplot(aes(x=lower, y = category)) +
+  geom_segment(aes(x=lower, xend=upper, y=category, yend=category), color="grey") +
+  geom_point( aes(x=lower, y=category), color=rgb(0.2,0.7,0.1,0.5), size=3 ) + 
+  geom_point(aes(x=upper, y=category), color=rgb(0.2,0.7,0.1,0.5), size=3 ) +
+  labs(title = "Confidence intervals for Kickstarter goal (USD)",
+       subtitle = "Kickstarter enabled funding calls, by type of project",
+       caption = "Data from Kickstarter via Kaggle",
+       tag = "Figure 3") + 
+  xlab("log_10 Funding goal") +
+  theme_bw()  
+```
+
+These look like better behaved confidence intervals. We can certainly make a comparison as to which groups overlap which other group. However, they only work on the $\log_{10}$ data.    We just aren't working in units that make sense to most business people interpreting these results.   
+
+### Transforming from the logarithmic scale
+
+We have transformed our data using $C = \log_{10} x$. The reverse of this transformation is $x = 10^C$. We can use this to put the transformed confidence intervals onto a suitable scale. We call this "back transformation".
+
+```{r back_transform}
+btcis <- 10^cis
+btcis
+
+btcis_df <- as_tibble(btcis, rownames = "category")
+colnames(btcis_df) <- c("category", "lower", "upper")
+
+btcis_df %>% ggplot(aes(x=lower, y = category)) +
+  geom_segment(aes(x=lower, xend=upper, y=category, yend=category), color="grey") +
+  geom_point( aes(x=lower, y=category), color=rgb(0.2,0.7,0.1,0.5), size=3 ) + 
+  geom_point(aes(x=upper, y=category), color=rgb(0.2,0.7,0.1,0.5), size=3 ) +
+  labs(title = "Confidence intervals for Kickstarter goal (USD)",
+       subtitle = "Kickstarter enabled funding calls, by type of project",
+       caption = "Data from Kickstarter via Kaggle",
+       tag = "Figure 4") + 
+  xlab("Funding goal") +
+  theme_bw()  
+```
+
+Mathematical note: The default `log` function in R will calculate natural logarithms (i.e. $\log_e$). The reverse of this transformation in the exponential function `exp`.
+
+
+## Homework
+
+Create one more grouped scenario and calculate the confidence intervals.
+
+- You could consider a different grouping variable, a different response variable or both.  
+- You could also conduct an analysis on a sensible subset of the data, for example examine only those kickstarter projects that were successful.
+- Before you calculate the group mean confidence intervals, make sure you do appropriate exploratory data analysis.
+
+

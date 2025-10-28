@@ -1,0 +1,184 @@
+---
+title: "Week3"
+author: "your name, D Toher, B Derrick"
+date: "insert date"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# installing packages used in the exercise today
+```{r, echo=FALSE}
+if(!require("ggplot2")){install.packages("ggplot2")}
+if(!require("flextable")){install.packages("flextable")}
+if(!require("psych")){install.packages("psych")}
+if(!require("tableone")){install.packages("tableone")}
+
+library(ggplot2)
+library(flextable)
+library(psych)
+library(tableone)
+
+```
+
+# Introduction to Fisher's Iris dataset
+
+This example is famous and you will find a lot of information about it particularly in R user guides.
+
+The dataset is within R so you do not to read in a data file.
+
+A good starting point to understand the data is to look at the data structure (using the function str) and look at some basic descriptive statistics of each of the variables (using the function summary)
+
+
+```{r}
+str(iris)
+summary(iris)
+summary(iris$Sepal.Length)
+summary(iris$Sepal.Width)
+summary(iris$Petal.Length)
+summary(iris$Petal.Width)
+```
+
+
+## Example graphics
+
+```{r}
+ggplot(data=iris)+
+  geom_histogram(mapping=aes(x=Petal.Length),binwidth=.1)
+
+
+ggplot(data=iris,aes(x=Species,y=Petal.Length))+
+  geom_boxplot()
+  
+  
+ggplot(data=iris,aes(x=Petal.Width,y=Petal.Length, color=Species))+
+  geom_point()
+```
+
+Discussion: 
+
+(1) what do the above graphics show?
+
+(2) which of the above graphics are most appropriate?
+
+(3) what additional graphics may be useful?
+
+
+# Dewis exercise 1: R_filtering_sampling.
+
+Sometimes you may be asked to work with a subset of data, either excluding a particular group, or taking a sample from a larger dataset.
+
+Insert your code to complete the Dewis exercise here:
+
+
+
+
+
+## Additional graphics for the iris datsest
+Attempt some additional relevant graphics using the iris dataset below:
+
+
+Interpret your graphics 
+
+
+
+
+
+
+
+
+# Dewis exercise 2: r_descriptive_statistics
+
+In this exercise you will read in a dataset from Dewis using the function read.csv 
+
+You will then summarise the data and see if this reveals any issues.
+
+Use this space to experiment with the R code provided to complete this task.
+
+
+
+
+# Advanced: Nice looking tables using the additional packages installed
+
+This shows how to start to get some really nice looking tables for the iris dataset
+
+```{r}
+describeBy(iris[,-5],group=iris[,5])
+```
+
+```{r}
+describeBy(iris[,-5],group=iris[,5],skew=FALSE)
+IrisSummary<-describeBy(iris[,-5],group=iris[,5],skew=FALSE)
+IrisSummary2<-describeBy(iris[,-5],group=iris[,5],skew=FALSE,mat=TRUE)
+#View(IrisSummary2)
+dim(IrisSummary)
+```
+
+
+```{r}
+#colnames(iris)[-5]
+
+# which columns are item and vars?
+Ignore<-colnames(IrisSummary2)%in% c("item","vars")
+
+#Ignore
+IrisSum<-IrisSummary2[,!Ignore]
+
+#colnames(IrisSum)
+colnames(IrisSum)[colnames(IrisSum)=="group1"]<-"species"
+
+
+
+
+flextable(IrisSum)
+```
+
+
+```{r}
+
+# need to add in a leading column with the variable information
+colnames(iris)[-5]
+niceNames<-c("Sepal length","Sepal width","Petal length","Petal width")
+
+#rep(niceNames,each=3)
+IrisSum2<-cbind(variable=rep(niceNames,each=3),IrisSum)
+#IrisSum2
+
+flextable(IrisSum2)
+```
+
+
+```{r}
+merge_v(flextable(IrisSum2))
+```
+
+
+```{r}
+merge_v(flextable(IrisSum2),j=1) # only merge 1st column!
+```
+
+
+```{r}
+theme_booktabs(merge_v(flextable(IrisSum2),j=1))
+```
+
+
+```{r}
+CreateTableOne(vars=names(iris)[-5],
+               strata="Species",  
+               data=iris,
+              test=F)
+```
+
+
+# End matter - Session Information
+
+It is usually good to make sure that you compile your document so that the information about your session (including software / package versions) is stated.
+
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,176 @@
+---
+title: "Week3"
+output:
+  word_document: default
+  html_document: default
+date: "July 2025"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## BACKGROUND
+
+In this activity you will consider the usefulness of some suggested R code, identify data issues, and produce descriptive statistics.
+
+A researcher is interested in the heights and weights of a population of adults, and whether these differ according to whether the adult has an active lifestyle or not and whether adults are left or right-handed. In general, they are interested in any interesting findings that can be found by exploring the dataset.
+
+
+## SUPPORT
+
+There is a supporting video that introduces this exercise, that uses the same data structure but different sample values. This may help you understand the context.
+
+[Watch this video on YouTube](https://www.youtube.com/watch?v=Rkcm9FRFTB8)
+
+
+
+## DATA STRUCTURE
+
+
+Load the dataset here! Call the dataset 'content'.
+
+
+
+```{r data}
+content <- read.csv("../Data/weight_height.csv")
+
+```
+
+The variables collected for a number of adults are:
+weight – in kilograms
+height – in centimetres
+handed - if adult is ‘left’ or right’ handed
+active - is adult considered to be active? ‘yes’ or ‘no’
+
+
+
+## Helpful Code
+
+Some useful code is given below. Try it out and see what it does.
+
+```{r useful}
+# Summary of numeric columns
+summary(content[, sapply(content, is.numeric)], na.rm = TRUE)
+
+# Frequency tables
+table(content$handed)
+
+table(content$handed, content$active)
+
+# Mosaic plot
+mosaicplot(table(content$handed, content$active))
+
+# Summary statistics by handedness
+by(content, factor(content$handed), summary)
+
+# Proportions of handedness
+prop.table(table(content$handed))
+
+# Replace "unknown" with NA in 'handed'
+content$handed[content$handed == 'unknown'] <- NA
+
+# Replace extreme weight values with NA
+content$weight[content$weight > 250] <- NA
+
+# Count of non-missing weight values
+length(na.omit(content$weight))
+
+# Aggregated height statistics by handedness and activity
+agg<- aggregate(
+  height ~ handed + active,
+  data = content,
+  FUN = function(x) c(mean = mean(x), sd = sd(x))
+)
+```
+
+## Preliminary exploratory data analyses.
+
+Adapting the above code, or otherwise, prepare some summary statistics for the attached data. 
+
+Consider what this reveals about any issues with the raw data, and further data preparation that may be required prior to statistical analyses. List those issues here.
+
+```{r eda1}
+#Histogram of height distribution in cm
+ggplot(content)+
+  geom_histogram(mapping=aes(x=height),binwidth=1)
+
+# 
+ggplot(content,aes(x=active,y=weight))+
+  geom_boxplot()
+  
+  
+ggplot(content,aes(x=weight,y=height,))+
+  geom_point()
+
+```
+
+
+## Data Cleaning
+
+
+Apply any further data preparation that may be required prior to statistical analyses, to ensure that only valid observations will be included in future analyses.
+
+```{r cleaning}
+# Replace extreme height values with NA
+content$height[content$height > 300] <- NA
+
+content$weight[content$weight < 30] <- NA
+
+summary(content[, sapply(content, is.numeric)], na.rm = TRUE)
+```
+
+
+## Exploratory data analyses using only the valid observations.
+
+Produce summary statistics using only the valid observations. You may wish to consider for example:
+
+How many adults in the sample are active? 
+
+What is the best estimate for the proportion of adults in the population that are active? 
+
+How many active adults in the sample are right-handed? 
+
+How many valid observations are there for weight? 
+
+What is the sample minimum weight? 
+
+What is the sample maximum weight? 
+
+What is the sample mean weight? 
+
+What is the sample standard deviation for weight? 
+
+What is the sample minimum weight of the active adults? 
+
+What is the sample maximum weight of the active adults? 
+
+What is the sample mean weight of the active adults? 
+
+What is the sample standard deviation weight of the active adults?
+
+```{r eda2}
+#1
+sum(content$active)
+#2
+mean()
+#3
+
+
+```
+
+
+
+## Conclusions
+
+Offer some interpretation. Some examples of research questions you may want to answer are:
+
+How do active adults compare to non-active adults in terms of weight and height? 
+
+How does the average and variability of weight and height differ by handedness?
+
+
+
+
